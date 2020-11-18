@@ -2,6 +2,9 @@
 # 11/14/2020
 # Nick Sica & Jack Huey
 
+#new global val for helping display scoreboard values (initialized to 1)
+score = 1
+
 fp_adder = 0
 FP_ADDER_CYCLES = 2
 
@@ -509,6 +512,32 @@ def set_fp_reg_location(reg, memory):
         fp_reg32 = memory
 
     
+#standard scoreboard operation for start, and in instances where there are no hazards
+def calc_scoreboard(execute_cycles, score_val, scoreboard)
+
+    #loop used to calculate scoreboard values for instruction
+    for i in range(len(scoreboard[x])):
+        
+        
+        #NOTE TO NICK: I know these clearly aren't all the hazards
+        #but I figuured I'd at least type up the skeleton of how we'll calculate the scoreboard, and then append the values
+       
+        
+        #checks if at execute stage of calculating scoreboard value, iterates by 1 otherwise
+        if(i == 2):
+            for j in range(len(scoreboard)):
+                if(score_val += execute_cycles >= scoreboard[j][3])
+                    score_val += (scoreboard[j][i] - score_val)
+                    
+                    
+            score_val += exeecute_cycles
+            scoreboard[x].append(score_val)
+         
+        else:
+            score_val += 1
+    
+    return(scoreboard)
+
 
 def store_instruction(instruction, num, scoreboard):
     print("store")
