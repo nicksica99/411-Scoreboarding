@@ -5,18 +5,25 @@
 #new global val for helping display scoreboard values (initialized to 1)
 score = 1
 
+#global variables for adder, the fp_adder will be 1 if in use
 fp_adder = 0
 FP_ADDER_CYCLES = 2
-
+#global multiplier variables
 fp_multi = 0
 FP_MULTI_CYCLES = 10
 
+#global divider variables
 fp_divider = 0
 FP_DIVIDER_CYCLES = 40
 
+#global integer unit variables
 integer_unit = 0
 INTEGER_CYCLES = 1
 
+#global variable for stages
+stages = ["Issue", "Read Operand", "Execution", "Write Back"]
+
+#all 32 floating point registers
 fp_reg1 = 0
 fp_reg2 = 0
 fp_reg3 = 0
@@ -50,6 +57,7 @@ fp_reg30 = 0
 fp_reg31 = 0
 fp_reg32 = 0
 
+#all 32 integer registers
 integer_reg1 = 0
 integer_reg2 = 0
 integer_reg3 = 0
@@ -83,6 +91,7 @@ integer_reg30 = 0
 integer_reg31 = 0
 integer_reg32 = 0
 
+#all memory locations and their equivalent values
 mem_location_0 = 45
 mem_location_1 = 12
 mem_location_2 = 0
@@ -103,34 +112,100 @@ mem_location_16 = 233
 mem_location_17 = 158
 mem_location_18 = 167
 
-
+#readfile()
+# Reads in the file by taking in a filename given by the user
+# returns a list of the instructions inside of the file
 def readFile(filename):
+    #opens the file and reads it into the instructionList array
     ofp = open(filename, "r")
     instructionList = ofp.readlines()
     instructions_List = []
-    
+
+    #splits the lines at the whitespace and then strips the whitespace
+    #appends the instructions to the instructions_List array
     for i in range(len(instructionList)):
         instructions = instructionList[i].split("\n")
         instructions = instructionList[i].strip("\n")
 
         instructions_List.append(instructions)
-    
+    #returns the instructions
     return instructions_List
 
+#getScoreboard()
+# builds the scoreboard from the rows, columns and instructions.
+# The rows are the number of instructions, columns will always be 5 (1 instruction, 4 stages)
+# returns the 2d scoreboard array
+def getScoreboard(rows, columns, instructions):
+    scoreboard = []
+    #builds the scoreboard
+    while len(scoreboard) < rows:
+        boardRow = []
+        while len(boardRow) < columns:
+            boardRow.append("")
 
+        scoreboard.append(boardRow)
+    return scoreboard
+
+# printScoreboard()
+# neatly prints out the scoreboard and the cycles at each stage for each instruction
+# does not return anything, just prints
 def printScoreboard(scoreboard):
-    print("\n  Instruction        |  Issue  | Read Operand | Execute | Write Back | ")
+    print("Instruction   |  Issue  | Read Operation | Execute | Write Back | ")
+    print("----------------------------------------------------------------- ")
+    #goes through the length of the scoreboard
+    for i in range(len(scoreboard)):
+        count = 0
+        #this goes through each instruction
+        for j in range(len(scoreboard[i])):
+            #checks if the subscript is an integer or not, this helps with printing
+            int_check = isinstance(scoreboard[i][j], int)
+            #if not integer then print normally
+            if(int_check != True):
+                print(scoreboard[i][j], end = " ")
+            else:
+                #if integer then it must print accordingly because to line up with each stage
+                #the count variable name is the counter that helps with this
+                if(count == 0):
+                    print("     ", scoreboard[i][j], end = " ")
+                    count +=1
+                elif(count == 1):
+                    print("          ", scoreboard[i][j], end = " ")
+                    count +=1
+                elif(count == 2):
+                    print("           ", scoreboard[i][j], end = " ")
+                    count += 1
+                elif(count == 3):
+                    print("          ", scoreboard[i][j], end = " ")
+                    count +=1 
+                    
+        print()
+        print("----------------------------------------------------------------- ")
 
-    print(scoreboard)
-    
+# main()
+#
+#
 def main():
+    width = 5
+    
     mipsInstructions = []
     scoreboard = []
+    scoreboard_rows = []
     prev_instructions = []
+
+    load_vals = []
+    store_vals = []
+    add_vals = []
+    addi_vals = []
+    add_d_vals = []
+    sub_d_vals = []
+    sub_vals = []
+    mul_vals = []
+    div_vals = []
      
     mipsToPython = {"Load" : "L.D", "Store": "S.D", "Add":"ADD", "AddImediate":"ADDI",
                     "Add.d": "ADD.D", "Sub.d" : "SUB.d", "Sub" : "SUB.D", "Mul.d": "MUL.D",
                     "Div.d": "DIV.D" }
+
     #lsa = load, store, add, length of the strings
     lsa_length = 3
     #other instructions are 4 chars long
@@ -141,64 +216,71 @@ def main():
     mipsInstructions = readFile(ifp)
     num_instruction = len(mipsInstructions)
 
+    scoreboard = getScoreboard(num_instruction, width, mipsInstructions)
+    
     #puts instructions into scoreboard array
     for i in range(num_instruction):
-        scoreboard.append(mipsInstructions[i])
+            scoreboard[i][0] = (mipsInstructions[i])
 
     #this for loop will determine what the current instruction is and what to do with it
     for i in range(num_instruction):
         instruct_num = i
         #load instructions
-        if(scoreboard[i][0] == "L"):
-            load_instruction(scoreboard[i], instruct_num, scoreboard)
-            
+        if(scoreboard[i][0][0] == "L"):
+            load_vals = load_instruction(scoreboard[i][0], instruct_num, scoreboard)
+
+            for num in range(1, len(stages)+1):
+                scoreboard[i][num] = load_vals[num-1]
+                
         #store instructions
-        elif(scoreboard[i][0:3] == "S.D"):
-            store_instruction(scoreboard[i], instruct_num, scoreboard)
+        elif(scoreboard[i][0][0:3] == "S.D"):
+            store_instruction(scoreboard[i][0], instruct_num, scoreboard)
 
         #multiply instructions
-        elif(scoreboard[i][0] == "M"):
-            multiply_instruction(scoreboard[i], instruct_num, scoreboard)
+        elif(scoreboard[i][0][0] == "M"):
+            multiply_instruction(scoreboard[i][0], instruct_num, scoreboard)
 
         #division instructions
-        elif(scoreboard[i][0] == "D"):
-            division_instruction(scoreboard[i], instruct_num, scoreboard)
+        elif(scoreboard[i][0][0] == "D"):
+            division_instruction(scoreboard[i][0], instruct_num, scoreboard)
 
         #Add instructions, there are conditions for each type
-        elif(scoreboard[i][0] == "A"):
-            if(scoreboard[i][3] == "I"):
-                add_immediate(scoreboard[i], instruct_num, scoreboard)
-            elif(scoreboard[i][4] == "D"):
-                add_fp(scoreboard[i], instruct_num, scoreboard)
+        elif(scoreboard[i][0][0] == "A"):
+            if(scoreboard[i][0][3] == "I"):
+                add_immediate(scoreboard[i][0], instruct_num, scoreboard)
+            elif(scoreboard[i][0][4] == "D"):
+                add_fp(scoreboard[i][0], instruct_num, scoreboard)
             else:
-                add_integer(scoreboard[i], instruct_num, scoreboard)
+                add_integer(scoreboard[i][0], instruct_num, scoreboard)
 
         #subtraction instructions, there are conditions for each type
-        elif(scoreboard[i][0:3] == "SUB"):
-            if(scoreboard[i][4] == "D"):
-                sub_fp(scoreboard[i], instruct_num, scoreboard)
+        elif(scoreboard[i][0][0:3] == "SUB"):
+            if(scoreboard[i][0][4] == "D"):
+                sub_fp(scoreboard[i][0], instruct_num, scoreboard)
             else:
-                sub_integer(scoreboard[i], instruct_num, scoreboard)
+                sub_integer(scoreboard[i][0], instruct_num, scoreboard)
                 
         #appends the instruction into a list of the previous instructions
-        prev_instructions.append(scoreboard[i])
+        prev_instructions.append(scoreboard[i][0])
+
         
     
  #   printScoreboard(scoreboard)
 
-# 
-# Input: takes in a Load instruction and does the arithmetic
-# Output: idk yet
+# load_instruction()
+# Input: takes in a Load instruction and does the arithmetic necessary
+# Output: returns a list of the cycles to be put into the scoreboard
 def load_instruction(instruction, num, scoreboard):
+    #holds the values of the scoreboard for this instruction
     scoreboard_vals = []
+    #counters for the stages
     issue_timer = 0
     read_operand_timer = 0
     execution_timer = 0
     write_back_timer = 0
 
-    
-    
     print("load")
+    #gets the registers, offset and memory value for the load instruction
     for i in range(len(instruction)):
         if(instruction[i] == "F"):
             reg = instruction[i:i+2]
@@ -210,11 +292,14 @@ def load_instruction(instruction, num, scoreboard):
             else:
                 mem_val = int(instruction[i+1:i+3])
                 
-
+    #gets the right memory value accounting for the offset
     mem_val = check_mem_location(mem_val, offset)
-    
+
+    #gets the right register for the instruction
     load_reg = check_fp_reg_location(reg)
-    
+
+    #if this instruction is the first instruction to be ran
+    # this is an edge case that makes life easy because then calculating the cycles is easy
     if(num == 0):
         issue_timer += INTEGER_CYCLES
         scoreboard_vals.append(issue_timer)
@@ -228,8 +313,14 @@ def load_instruction(instruction, num, scoreboard):
         write_back_timer = execution_timer + INTEGER_CYCLES
         scoreboard_vals.append(write_back_timer)
 
-        
+        #sets the register value
         set_fp_reg_location(reg, mem_val)
+
+        return scoreboard_vals
+
+    else:
+        print("hi load 1")
+            
         
  
     
@@ -512,32 +603,6 @@ def set_fp_reg_location(reg, memory):
         fp_reg32 = memory
 
     
-#standard scoreboard operation for start, and in instances where there are no hazards
-def calc_scoreboard(execute_cycles, score_val, scoreboard)
-
-    #loop used to calculate scoreboard values for instruction
-    for i in range(len(scoreboard[x])):
-        
-        
-        #NOTE TO NICK: I know these clearly aren't all the hazards
-        #but I figuured I'd at least type up the skeleton of how we'll calculate the scoreboard, and then append the values
-       
-        
-        #checks if at execute stage of calculating scoreboard value, iterates by 1 otherwise
-        if(i == 2):
-            for j in range(len(scoreboard)):
-                if(score_val += execute_cycles >= scoreboard[j][3])
-                    score_val += (scoreboard[j][i] - score_val)
-                    
-                    
-            score_val += exeecute_cycles
-            scoreboard[x].append(score_val)
-         
-        else:
-            score_val += 1
-    
-    return(scoreboard)
-
 
 def store_instruction(instruction, num, scoreboard):
     print("store")
@@ -563,6 +628,32 @@ def multiply_instruction(instruction, num, scoreboard):
 def division_instruction(instruction, num, scoreboard):
      print("division")
 
+#standard scoreboard operation for start, and in instances where there are no hazards
+def calc_scoreboard(execute_cycles, score_val, scoreboard):
+
+    #loop used to calculate scoreboard values for instruction
+    for i in range(len(scoreboard[x])):
+
+
+    #NOTE TO NICK: I know these clearly aren't all the hazards
+    #but I figuured I'd at least type up the skeleton of how we'll calculate the scoreboard,
+    #and then append the values
+
+
+    #checks if at execute stage of calculating scoreboard value, iterates by 1 otherwise
+        if(i == 2):
+            for j in range(len(scoreboard)):
+                if(score_val += execute_cycles >= scoreboard[j][3]):
+                    score_val += (scoreboard[j][i] - score_val)
+
+
+            score_val += execute_cycles
+            scoreboard[x].append(score_val)
+
+        else:
+            score_val += 1
+
+    return(scoreboard)
 
 main()
     
