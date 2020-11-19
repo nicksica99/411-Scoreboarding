@@ -231,7 +231,8 @@ def main():
 
             for num in range(1, len(stages)+1):
                 scoreboard[i][num] = load_vals[num-1]
-                
+
+            printScoreboard(scoreboard)
         #store instructions
         elif(scoreboard[i][0][0:3] == "S.D"):
             store_instruction(scoreboard[i][0], instruct_num, scoreboard)
@@ -265,7 +266,7 @@ def main():
 
         
     
- #   printScoreboard(scoreboard)
+    printScoreboard(scoreboard)
 
 # load_instruction()
 # Input: takes in a Load instruction and does the arithmetic necessary
@@ -273,6 +274,9 @@ def main():
 def load_instruction(instruction, num, scoreboard):
     #holds the values of the scoreboard for this instruction
     scoreboard_vals = []
+    #tells the later calculating function that this is a load instruction:
+    calc_integer_tell = 1
+    
     #counters for the stages
     issue_timer = 0
     read_operand_timer = 0
@@ -291,7 +295,7 @@ def load_instruction(instruction, num, scoreboard):
                 mem_val = int(instruction[i+1])
             else:
                 mem_val = int(instruction[i+1:i+3])
-                
+    
     #gets the right memory value accounting for the offset
     mem_val = check_mem_location(mem_val, offset)
 
@@ -320,8 +324,10 @@ def load_instruction(instruction, num, scoreboard):
 
     else:
         print("hi load 1")
-            
-        
+        scoreboard_vals = calc_integer_scoreboard(calc_integer_tell, num, mem_val,
+                                                  load_reg, scoreboard)
+
+        return scoreboard_vals
  
     
 def check_mem_location(mem_val, offset):
@@ -606,6 +612,9 @@ def set_fp_reg_location(reg, memory):
 
 def store_instruction(instruction, num, scoreboard):
     print("store")
+    store_vals = []
+    calc_integer_tell = 2
+
     
 def add_integer(instruction, num, scoreboard):
     print("add_integer")
@@ -629,31 +638,84 @@ def division_instruction(instruction, num, scoreboard):
      print("division")
 
 #standard scoreboard operation for start, and in instances where there are no hazards
-def calc_scoreboard(execute_cycles, score_val, scoreboard):
+def calc_integer_scoreboard(inst_tell, inst_num, mem_val, load_reg, scoreboard):
+    scoreboard_vals = []
+    issue_timer = 0
+    read_operand_timer = 0
+    execution_timer = 0
+    write_back_timer = 0
 
-    #loop used to calculate scoreboard values for instruction
-    for i in range(len(scoreboard[x])):
+    
+    #checks for if the unit before it is the same then it must wait until it is done
+    if(scoreboard[inst_num-1][0][0] == "L" or scoreboard[inst_num-1][0][0:3] == "S.D" or
+       scoreboard[inst_num-1][0][0:4] == "ADDI" or scoreboard[inst_num-1][0][0:4] == "ADD "
+       or scoreboard[inst_num-1][0][0:5] == "SUB.D"):
+
+        prev_inst_wb = int(scoreboard[inst_num-1][4])
+            
+        issue_timer = prev_inst_wb + INTEGER_CYCLES
+
+        scoreboard_vals.append(issue_timer)
+
+        prev_ins_wb_times = []
+        for i in range(inst_num,0,-1):
+            instruction = scoreboard[inst_num-1][0]
+            len_instruction = len(instruction)
+            for j in range(len(instruction)):
+                if(instruction[j] == "F"):
+                    registers = instruction[j:len_instruction]
+                    prev_reg = []
+                    for k in range(len(registers)):
+                        if(registers[k] == "F"):
+                            prev_reg.append(registers[k:k+2])
+
+            if(load_reg in prev_reg):
+                prev_ins_wb_times.append(int(scoreboard[inst_num-1][4]))
+
+        if(prev_ins_wb_times != []):
+            read_operand_timer = max(prev_ins_wb_times)
+        else:
+            read_operand_timer = issue_timer + INTEGER_CYCLES
+
+            scoreboard_vals.append(read_operand_timer)
+
+            execution_timer = read_operand_timer + INTEGER_CYCLES
+
+            scoreboard_vals.append(execution_timer)
+
+            write_back_timer = execution_timer + INTEGER_CYCLES
+
+            scoreboard_vals.append(write_back_timer)
+                            
+
+    else:
+        print("hi test")  
+
+        
+        
+        #loop used to calculate scoreboard values for instruction
+        #for i in range(len(scoreboard[inst_num])):
 
 
     #NOTE TO NICK: I know these clearly aren't all the hazards
-    #but I figuured I'd at least type up the skeleton of how we'll calculate the scoreboard,
+    #but I figured I'd at least type up the skeleton of how we'll calculate the scoreboard,
     #and then append the values
 
 
     #checks if at execute stage of calculating scoreboard value, iterates by 1 otherwise
-        if(i == 2):
-            for j in range(len(scoreboard)):
-                if(score_val += execute_cycles >= scoreboard[j][3]):
-                    score_val += (scoreboard[j][i] - score_val)
+        #if(i == 2):
+         #   for j in range(len(scoreboard)):
+         #       if((score_val + execute_cycles) >= scoreboard[j][3]):
+          #          score_val += (scoreboard[j][i] - score_val)
 
 
-            score_val += execute_cycles
-            scoreboard[x].append(score_val)
+           # score_val += execute_cycles
+            #scoreboard[x].append(score_val)
 
-        else:
-            score_val += 1
+        #else:
+         #   score_val += 1
 
-    return(scoreboard)
+    return(scoreboard_vals)
 
 main()
     
