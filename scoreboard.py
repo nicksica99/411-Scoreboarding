@@ -232,11 +232,12 @@ def main():
             for num in range(1, len(stages)+1):
                 scoreboard[i][num] = load_vals[num-1]
 
-            printScoreboard(scoreboard)
         #store instructions
         elif(scoreboard[i][0][0:3] == "S.D"):
-            store_instruction(scoreboard[i][0], instruct_num, scoreboard)
+            load_vals = store_instruction(scoreboard[i][0], instruct_num, scoreboard)
 
+            for num in range(1, len(stages)+1):
+                scoreboard[i][num] = load_vals[num - 1]
         #multiply instructions
         elif(scoreboard[i][0][0] == "M"):
             multiply_instruction(scoreboard[i][0], instruct_num, scoreboard)
@@ -266,7 +267,7 @@ def main():
 
         
     
-    printScoreboard(scoreboard)
+        printScoreboard(scoreboard)
 
 # load_instruction()
 # Input: takes in a Load instruction and does the arithmetic necessary
@@ -323,10 +324,11 @@ def load_instruction(instruction, num, scoreboard):
         return scoreboard_vals
 
     else:
-        print("hi load 1")
         scoreboard_vals = calc_integer_scoreboard(calc_integer_tell, num, mem_val,
                                                   load_reg, scoreboard)
 
+        set_fp_reg_location(reg, mem_val)
+        
         return scoreboard_vals
  
     
@@ -615,9 +617,60 @@ def store_instruction(instruction, num, scoreboard):
     store_vals = []
     calc_integer_tell = 2
 
+    issue_timer = 0
+    read_operand_timer = 0
+    execution_timer = 0
+    write_back_timer = 0
+    #gets the registers, offset and memory value for the load instruction
+    for i in range(len(instruction)):
+        if(instruction[i] == "F"):
+            reg = instruction[i:i+2]
+
+        if(instruction[i] == "("):
+            offset = int(instruction[i-1])
+            if(instruction[i+2] == ")"):
+                mem_val = int(instruction[i+1])
+            else:
+                mem_val = int(instruction[i+1:i+3])
+                     
+    #gets the right memory value accounting for the offset
+    mem_val = check_mem_location(mem_val, offset)
+
+    #gets the right register for the instruction
+    load_reg = check_fp_reg_location(reg)
+    
+    #if this instruction is the first instruction to be ran
+    # this is an edge case that makes life easy because then calculating the cycles is easy
+    if(num == 0):
+        issue_timer += INTEGER_CYCLES
+        scoreboard_vals.append(issue_timer)
+
+        read_operand_timer = issue_timer + INTEGER_CYCLES
+        scoreboard_vals.append(read_operand_timer)
+
+        execution_timer =  read_operand_timer + INTEGER_CYCLES
+        scoreboard_vals.append(execution_timer)
+
+        write_back_timer = execution_timer + INTEGER_CYCLES
+        scoreboard_vals.append(write_back_timer)
+
+        #sets the register value
+        set_fp_reg_location(reg, mem_val)
+
+        return scoreboard_vals
+
+    else:
+        print("hi store 1")
+
+        scoreboard_vals = calc_integer_scoreboard(calc_integer_tell, num, mem_val,
+                                                  load_reg, scoreboard)
+
+        set_fp_reg_location(reg, mem_val)
+        return scoreboard_vals
     
 def add_integer(instruction, num, scoreboard):
     print("add_integer")
+    
 
 def add_immediate(instruction, num, scoreboard):
      print("add_immediate")
@@ -650,28 +703,38 @@ def calc_integer_scoreboard(inst_tell, inst_num, mem_val, load_reg, scoreboard):
     if(scoreboard[inst_num-1][0][0] == "L" or scoreboard[inst_num-1][0][0:3] == "S.D" or
        scoreboard[inst_num-1][0][0:4] == "ADDI" or scoreboard[inst_num-1][0][0:4] == "ADD "
        or scoreboard[inst_num-1][0][0:5] == "SUB.D"):
-
+        
+        #since we know here that the previous instruction is the same unit
+        #then we must wait until that has completed, so it recieves the write_back time
         prev_inst_wb = int(scoreboard[inst_num-1][4])
-            
+
+        #sets the issue
         issue_timer = prev_inst_wb + INTEGER_CYCLES
 
         scoreboard_vals.append(issue_timer)
 
         prev_ins_wb_times = []
+        prev_reg = []
+        #goes through the rest of the previous instructions and gets the registers to check for
+        #more hazards
         for i in range(inst_num,0,-1):
-            instruction = scoreboard[inst_num-1][0]
+            instruction = scoreboard[i-1][0]
             len_instruction = len(instruction)
-            for j in range(len(instruction)):
+            print("test")
+            #goes through the instruction and grabs the registers
+            for j in range(len_instruction):
                 if(instruction[j] == "F"):
                     registers = instruction[j:len_instruction]
-                    prev_reg = []
+                    print("registers",registers)
+                    
                     for k in range(len(registers)):
                         if(registers[k] == "F"):
                             prev_reg.append(registers[k:k+2])
 
             if(load_reg in prev_reg):
-                prev_ins_wb_times.append(int(scoreboard[inst_num-1][4]))
-
+                prev_ins_wb_times.append(int(scoreboard[i-1][4]))
+                
+        print("prev:reg",prev_reg)
         if(prev_ins_wb_times != []):
             read_operand_timer = max(prev_ins_wb_times)
         else:
