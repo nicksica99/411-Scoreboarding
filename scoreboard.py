@@ -25,7 +25,7 @@ stages = ["Issue", "Read Operand", "Execution", "Write Back"]
 
 #all 32 floating point registers
 fp_reg1 = 0
-fp_reg2 = 0
+fp_reg2 = 10
 fp_reg3 = 0
 fp_reg4 = 0
 fp_reg5 = 0
@@ -248,12 +248,25 @@ def main():
 
         #Add instructions, there are conditions for each type
         elif(scoreboard[i][0][0] == "A"):
+            #add immediate, gets the values for the scoreboard and puts them in the scoreboard
             if(scoreboard[i][0][3] == "I"):
-                add_immediate(scoreboard[i][0], instruct_num, scoreboard)
+                addi_vals = add_immediate(scoreboard[i][0], instruct_num, scoreboard)
+
+                for num in range(1, len(stages)+1):
+                    scoreboard[i][num] = addi_vals[num-1]
+
+            #floating point add 
             elif(scoreboard[i][0][4] == "D"):
-                add_fp(scoreboard[i][0], instruct_num, scoreboard)
+                add_d_vals = add_fp(scoreboard[i][0], instruct_num, scoreboard)
+
+                for num in range(1, len(stages)+1):
+                    scoreboard[i][num] = add_d_vals[num - 1]
             else:
-                add_integer(scoreboard[i][0], instruct_num, scoreboard)
+                #integer add
+                add_vals = add_integer(scoreboard[i][0], instruct_num, scoreboard)
+
+                for num in range(1, len(stages)+1):
+                    scoreboard[i][num] = add_vals[num - 1]
 
         #subtraction instructions, there are conditions for each type
         elif(scoreboard[i][0][0:3] == "SUB"):
@@ -610,7 +623,108 @@ def set_fp_reg_location(reg, memory):
         global fp_reg32
         fp_reg32 = memory
 
-    
+def set_int_reg_location(reg, memory):
+    if(reg == "$0"):
+        global integer_reg1
+        integer_reg1 = memory
+    elif(reg == "$1"):
+        global integer_reg2
+        integer_reg2 = memory
+    elif(reg == "$2"):
+        global integer_reg3
+        integer_reg3 = memory
+    elif(reg == "$3"):
+        global integer_reg4
+        integer_reg4 = memory
+    elif(reg == "$4"):
+        global integer_reg5
+        integer_reg5 = memory
+    elif(reg == "$5"):
+        global integer_reg6
+        integer_reg6 = memory
+    elif(reg == "$6"):
+        global integer_reg7
+        integer_reg7 = memory
+    elif(reg == "$7"):
+        global integer_reg8
+        integer_reg8 = memory
+    elif(reg == "$8"):
+        global integer_reg9
+        integer_reg9 = memory
+    elif(reg == "$9"):
+        global integer_reg10
+        integer_reg10 = memory
+    elif(reg == "$10"):
+        global integer_reg11
+        integer_reg11 = memory
+    elif(reg == "$11"):
+        global integer_reg12
+        integer_reg12 = memory
+    elif(reg == "$12"):
+        global integer_reg13
+        integer_reg3 = memory
+        reg = memory
+    elif(reg == "$13"):
+        global integer_reg14
+        integer_reg14 = memory
+    elif(reg == "$14"):
+        global integer_reg15
+        integer_reg15 = memory
+    elif(reg == "$15"):
+        global integer_reg16
+        integer_reg16 = memory
+    elif(reg == "$16"):
+        global integer_reg17
+        integer_reg17 = memory
+    elif(reg == "$17"):
+        global integer_reg18
+        integer_reg3 = memory
+        reg = memory
+    elif(reg == "$18"):
+        global integer_reg19
+        integer_reg19 = memory
+    elif(reg == "$19"):
+        global integer_reg20
+        integer_reg20 = memory
+    elif(reg == "$20"):
+        global integer_reg21
+        integer_reg21 = memory
+    elif(reg == "$21"):
+        global integer_reg22
+        integer_reg3 = memory
+        reg = memory
+    elif(reg == "$22"):
+        global integer_reg23
+        integer_reg23 = memory
+    elif(reg == "$23"):
+        global integer_reg24
+        integer_reg24 = memory
+    elif(reg == "$24"):
+        global integer_reg25
+        integer_reg25 = memory
+    elif(reg == "$25"):
+        global integer_reg26
+        integer_reg26 = memory
+    elif(reg == "$26"):
+        global integer_reg27
+        integer_reg27 = memory
+    elif(reg == "$27"):
+        global integer_reg28
+        integer_reg28 = memory
+    elif(reg == "$28"):
+        global integer_reg29
+        integer_reg29 = memory
+    elif(reg == "$29"):
+        global integer_reg30
+        integer_reg30 = memory
+    elif(reg == "$30"):
+        global integer_reg31
+        integer_reg31 = memory
+    elif(reg == "$31"):
+        global integer_reg32
+        integer_reg32 = memory
+
+    return reg
 
 def store_instruction(instruction, num, scoreboard):
     print("store")
@@ -670,13 +784,146 @@ def store_instruction(instruction, num, scoreboard):
     
 def add_integer(instruction, num, scoreboard):
     print("add_integer")
+    add_vals = []
+    registers = []
+
+    issue_timer = 0
+    read_operand_timer = 0
+    execution_timer = 0
+    write_back_timer = 0
+
+    for i in range(len(instruction)):
+        if(instruction[i] == "$"):
+            registers.append(instruction[i:i+2])
+        if(i == len(instruction)-1):
+            registers.append(instruction[i-1:i+1])
+
+    reg_dest = registers[0]
+    reg_source = registers[1]
+    reg_source2 = registers[2]
+
+    dest_reg = check_integer_regs(reg_dest)
+    source_reg = check_integer_regs(reg_source)
+    source_reg2 = check_integer_regs(reg_source2)
+
+    if(num == 0):
+        issue_timer += INTEGER_CYCLES
+        add_vals.append(issue_timer)
+
+        read_operand_timer = issue_timer + INTEGER_CYCLES
+        add_vals.append(read_operand_timer)
+
+        execution_timer = read_operand_timer + INTEGER_CYCLES
+        add_vals.append(execution_timer)
+
+        write_back_timer = execution_timer + INTEGER_CYCLES
+        add_vals.append(write_back_timer)
+
+        memory = source_reg + source_reg2
+
+        set_int_reg_location(reg_dest, memory)
+
+        return add_vals
+
+    else:
+        print("hi")
     
 
 def add_immediate(instruction, num, scoreboard):
-     print("add_immediate")
+    print("add_immediate")
+    add_vals = []
+    registers = []
+
+    issue_timer = 0
+    read_operand_timer = 0
+    execution_timer = 0
+    write_back_timer = 0
+
+    for i in range(len(instruction)):
+        if(instruction[i] == "$"):
+            registers.append(instruction[i:i+2])
+        if(i == len(instruction)-1):
+            registers.append(instruction[i-1:i+1])
+
+                 
+    reg_dest = registers[0]
+    reg_source = registers[1]
+    value  = int(registers[2])
+
+    dest_reg = check_integer_regs(reg_dest)
+    source_reg = check_integer_regs(reg_source)
+
+    if(num == 0):
+        issue_timer += INTEGER_CYCLES
+        add_vals.append(issue_timer)
+
+        read_operand_timer = issue_timer + INTEGER_CYCLES
+        add_vals.append(read_operand_timer)
+
+        execution_timer = read_operand_timer + INTEGER_CYCLES
+        add_vals.append(execution_timer)
+
+        write_back_timer = execution_timer + INTEGER_CYCLES
+        add_vals.append(write_back_timer)
+
+        memory = source_reg + value
+        
+        set_int_reg_location(reg_dest, memory)
+
+        return add_vals
+
+    else:
+        print("hi")
+     
      
 def add_fp(instruction, num, scoreboard):
-     print("add_fp")
+    print("add_fp")
+    add_vals = []
+    registers = []
+
+    issue_timer = 0
+    read_operand_timer = 0
+    execution_timer = 0
+    write_back_timer = 0
+
+    for i in range(len(instruction)):
+        if(instruction[i] == "F"):
+            registers.append(instruction[i:i+2])
+        if(i == len(instruction)-1):
+            registers.append(instruction[i-1:i+1])
+
+    reg_dest = registers[0]
+    reg_source = registers[1]
+    reg_source2 = registers[2]
+
+    dest_reg = check_fp_reg_location(reg_dest)
+    source_reg = check_fp_reg_location(reg_source)
+    source_reg2 = check_fp_reg_location(reg_source2)
+
+    if(num == 0):
+        issue_timer += 1
+        add_vals.append(issue_timer)
+
+        read_operand_timer = issue_timer + 1
+        add_vals.append(read_operand_timer)
+
+        execution_timer = read_operand_timer + FP_ADDER_CYCLES
+        add_vals.append(execution_timer)
+
+        write_back_timer = execution_timer + 1
+        add_vals.append(write_back_timer)
+
+        memory = source_reg + source_reg2
+
+        set_fp_reg_location(reg_dest, memory)
+
+        print(fp_reg4)
+        return add_vals
+
+    else:
+        print("hi")
+
+     
 
 def sub_fp(instruction, num, scoreboard):
      print("sub_fp")
