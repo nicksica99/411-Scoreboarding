@@ -25,7 +25,7 @@ stages = ["Issue", "Read Operand", "Execution", "Write Back"]
 
 #all 32 floating point registers
 fp_reg1 = 0
-fp_reg2 = 10
+fp_reg2 = 0
 fp_reg3 = 0
 fp_reg4 = 0
 fp_reg5 = 0
@@ -234,17 +234,23 @@ def main():
 
         #store instructions
         elif(scoreboard[i][0][0:3] == "S.D"):
-            load_vals = store_instruction(scoreboard[i][0], instruct_num, scoreboard)
+            store_vals = store_instruction(scoreboard[i][0], instruct_num, scoreboard)
 
             for num in range(1, len(stages)+1):
-                scoreboard[i][num] = load_vals[num - 1]
+                scoreboard[i][num] = store_vals[num - 1]
         #multiply instructions
         elif(scoreboard[i][0][0] == "M"):
-            multiply_instruction(scoreboard[i][0], instruct_num, scoreboard)
+            mul_vals = multiply_instruction(scoreboard[i][0], instruct_num, scoreboard)
+
+            for num in range(1, len(stages)+1):
+                scoreboard[i][num] = mul_vals[num - 1]
 
         #division instructions
         elif(scoreboard[i][0][0] == "D"):
-            division_instruction(scoreboard[i][0], instruct_num, scoreboard)
+            div_vals = division_instruction(scoreboard[i][0], instruct_num, scoreboard)
+
+            for num in range(1, len(stages)+1):
+                scoreboard[i][num] = div_vals[num - 1]
 
         #Add instructions, there are conditions for each type
         elif(scoreboard[i][0][0] == "A"):
@@ -271,9 +277,16 @@ def main():
         #subtraction instructions, there are conditions for each type
         elif(scoreboard[i][0][0:3] == "SUB"):
             if(scoreboard[i][0][4] == "D"):
-                sub_fp(scoreboard[i][0], instruct_num, scoreboard)
+               sub_d_vals =  sub_fp(scoreboard[i][0], instruct_num, scoreboard)
+
+               for num in range(1, len(stages)+1):
+                   scoreboard[i][num] = sub_d_vals[num - 1]
+            #subtract integer        
             else:
-                sub_integer(scoreboard[i][0], instruct_num, scoreboard)
+                sub_vals = sub_integer(scoreboard[i][0], instruct_num, scoreboard)
+
+                for num in range(1, len(stages)+1):
+                    scoreboard[i][num] = sub_vals[num - 1]
                 
         #appends the instruction into a list of the previous instructions
         prev_instructions.append(scoreboard[i][0])
@@ -917,7 +930,6 @@ def add_fp(instruction, num, scoreboard):
 
         set_fp_reg_location(reg_dest, memory)
 
-        print(fp_reg4)
         return add_vals
 
     else:
@@ -926,16 +938,195 @@ def add_fp(instruction, num, scoreboard):
      
 
 def sub_fp(instruction, num, scoreboard):
-     print("sub_fp")
+    print("sub_fp")
+    sub_vals = []
+    registers = []
+
+    issue_timer = 0
+    read_operand_timer = 0
+    execution_timer = 0
+    write_back_timer = 0
+
+    for i in range(len(instruction)):
+        if(instruction[i] == "F"):
+            registers.append(instruction[i:i+2])
+        if(i == len(instruction)-1):
+            registers.append(instruction[i-1:i+1])
+
+    reg_dest = registers[0]
+    reg_source = registers[1]
+    reg_source2 = registers[2]
+
+    dest_reg = check_fp_reg_location(reg_dest)
+    source_reg = check_fp_reg_location(reg_source)
+    source_reg2 = check_fp_reg_location(reg_source2)
+
+    if(num == 0):
+        issue_timer += 1
+        sub_vals.append(issue_timer)
+
+        read_operand_timer = issue_timer + 1
+        sub_vals.append(read_operand_timer)
+
+        execution_timer = read_operand_timer + FP_ADDER_CYCLES
+        sub_vals.append(execution_timer)
+
+        write_back_timer = execution_timer + 1
+        sub_vals.append(write_back_timer)
+
+        memory = source_reg - source_reg2
+
+        set_fp_reg_location(reg_dest, memory)
+        
+        return sub_vals
+    else:
+        print("hi")
+    
 
 def sub_integer(instruction, num, scoreboard):
     print("sub_integer")
+    sub_vals = []
+    registers = []
+
+    issue_timer = 0
+    read_operand_timer = 0
+    execution_timer = 0
+    write_back_timer = 0
+
+    for i in range(len(instruction)):
+        if(instruction[i] == "$"):
+            registers.append(instruction[i:i+2])
+        if(i == len(instruction)-1):
+            registers.append(instruction[i-1:i+1])
+
+    reg_dest = registers[0]
+    reg_source = registers[1]
+    reg_source2 = registers[2]
+
+    dest_reg = check_integer_regs(reg_dest)
+    source_reg = check_integer_regs(reg_source)
+    source_reg2 = check_integer_regs(reg_source2)
+
+    if(num == 0):
+        issue_timer += INTEGER_CYCLES
+        sub_vals.append(issue_timer)
+
+        read_operand_timer = issue_timer + INTEGER_CYCLES
+        sub_vals.append(read_operand_timer)
+
+        execution_timer = read_operand_timer + INTEGER_CYCLES
+        sub_vals.append(execution_timer)
+
+        write_back_timer = execution_timer + INTEGER_CYCLES
+        sub_vals.append(write_back_timer)
+
+        memory = source_reg - source_reg2
+        
+        set_int_reg_location(reg_dest, memory)
+        
+        return sub_vals
+
+    else:
+        print("hi")
+
+    
+    
     
 def multiply_instruction(instruction, num, scoreboard):
-     print("multiply")
+    print("multiply")
+    mul_vals = []
+    registers = []
 
+    issue_timer = 0
+    read_operand_timer = 0
+    execution_timer = 0
+    write_back_timer = 0
+
+    for i in range(len(instruction)):
+        if(instruction[i] == "F"):
+            registers.append(instruction[i:i+2])
+        if(i == len(instruction)-1):
+            registers.append(instruction[i-1:i+1])
+
+    reg_dest = registers[0]
+    reg_source = registers[1]
+    reg_source2 = registers[2]
+
+    dest_reg = check_fp_reg_location(reg_dest)
+    source_reg = check_fp_reg_location(reg_source)
+    source_reg2 = check_fp_reg_location(reg_source2)
+
+    if(num == 0):
+        issue_timer += 1
+        mul_vals.append(issue_timer)
+
+        read_operand_timer = issue_timer + 1
+        mul_vals.append(read_operand_timer)
+
+        execution_timer = read_operand_timer + FP_MULTI_CYCLES
+        mul_vals.append(execution_timer)
+
+        write_back_timer = execution_timer + 1
+        mul_vals.append(write_back_timer)
+
+        memory = (source_reg * source_reg2)
+
+        set_fp_reg_location(reg_dest, memory)
+
+        return mul_vals
+
+    else:
+        print("hi")
+                                                                                                     
 def division_instruction(instruction, num, scoreboard):
-     print("division")
+    print("division")
+    div_vals = []
+    registers = []
+
+    issue_timer = 0
+    read_operand_timer = 0
+    execution_timer = 0
+    write_back_timer = 0
+
+    for i in range(len(instruction)):
+        if(instruction[i] == "F"):
+            registers.append(instruction[i:i+2])
+        if(i == len(instruction)-1):
+            registers.append(instruction[i-1:i+1])
+
+    reg_dest = registers[0]
+    reg_source = registers[1]
+    reg_source2 = registers[2]
+
+    dest_reg = check_fp_reg_location(reg_dest)
+    source_reg = check_fp_reg_location(reg_source)
+    source_reg2 = check_fp_reg_location(reg_source2)
+
+    if(num == 0):
+        issue_timer += 1
+        div_vals.append(issue_timer)
+
+        read_operand_timer = issue_timer + 1
+        div_vals.append(read_operand_timer)
+
+        execution_timer = read_operand_timer + FP_DIVIDER_CYCLES
+        div_vals.append(execution_timer)
+
+        write_back_timer = execution_timer + 1
+        div_vals.append(write_back_timer)
+
+        memory = source_reg / source_reg2
+
+        set_fp_reg_location(reg_dest, memory)
+
+        print(fp_reg4)
+
+        return div_vals
+    else:
+        print("hi")
+                                    
+
+     
 
 #standard scoreboard operation for start, and in instances where there are no hazards
 def calc_integer_scoreboard(inst_tell, inst_num, mem_val, load_reg, scoreboard):
