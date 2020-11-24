@@ -2,9 +2,6 @@
 # 11/14/2020
 # Nick Sica & Jack Huey
 
-#new global val for helping display scoreboard values (initialized to 1)
-score = 1
-
 #global variables for adder, the fp_adder will be 1 if in use
 fp_adder = 0
 FP_ADDER_CYCLES = 2
@@ -770,28 +767,25 @@ def store_instruction(instruction, num, scoreboard):
     # this is an edge case that makes life easy because then calculating the cycles is easy
     if(num == 0):
         issue_timer += INTEGER_CYCLES
-        scoreboard_vals.append(issue_timer)
+        store_vals.append(issue_timer)
 
         read_operand_timer = issue_timer + INTEGER_CYCLES
-        scoreboard_vals.append(read_operand_timer)
+        store_vals.append(read_operand_timer)
 
         execution_timer =  read_operand_timer + INTEGER_CYCLES
-        scoreboard_vals.append(execution_timer)
+        store_vals.append(execution_timer)
 
         write_back_timer = execution_timer + INTEGER_CYCLES
-        scoreboard_vals.append(write_back_timer)
+        store_vals.append(write_back_timer)
 
         #sets the register value
         set_fp_reg_location(reg, mem_val)
 
-        return scoreboard_vals
+        return store_vals
 
     else:
-        print("hi store 1")
-
         scoreboard_vals = calc_integer_scoreboard(calc_integer_tell, num, mem_val,
                                                   load_reg, scoreboard)
-
         set_fp_reg_location(reg, mem_val)
         return scoreboard_vals
     
@@ -819,6 +813,8 @@ def add_integer(instruction, num, scoreboard):
     source_reg = check_integer_regs(reg_source)
     source_reg2 = check_integer_regs(reg_source2)
 
+    memory = source_reg + source_reg2
+
     if(num == 0):
         issue_timer += INTEGER_CYCLES
         add_vals.append(issue_timer)
@@ -831,8 +827,6 @@ def add_integer(instruction, num, scoreboard):
 
         write_back_timer = execution_timer + INTEGER_CYCLES
         add_vals.append(write_back_timer)
-
-        memory = source_reg + source_reg2
 
         set_int_reg_location(reg_dest, memory)
 
@@ -861,10 +855,12 @@ def add_immediate(instruction, num, scoreboard):
                  
     reg_dest = registers[0]
     reg_source = registers[1]
-    value  = int(registers[2])
+    value = int(registers[2])
 
     dest_reg = check_integer_regs(reg_dest)
     source_reg = check_integer_regs(reg_source)
+
+    memory = source_reg + value
 
     if(num == 0):
         issue_timer += INTEGER_CYCLES
@@ -879,8 +875,6 @@ def add_immediate(instruction, num, scoreboard):
         write_back_timer = execution_timer + INTEGER_CYCLES
         add_vals.append(write_back_timer)
 
-        memory = source_reg + value
-        
         set_int_reg_location(reg_dest, memory)
 
         return add_vals
@@ -913,6 +907,8 @@ def add_fp(instruction, num, scoreboard):
     source_reg = check_fp_reg_location(reg_source)
     source_reg2 = check_fp_reg_location(reg_source2)
 
+    memory = source_reg + source_reg2
+
     if(num == 0):
         issue_timer += 1
         add_vals.append(issue_timer)
@@ -925,8 +921,6 @@ def add_fp(instruction, num, scoreboard):
 
         write_back_timer = execution_timer + 1
         add_vals.append(write_back_timer)
-
-        memory = source_reg + source_reg2
 
         set_fp_reg_location(reg_dest, memory)
 
@@ -961,6 +955,8 @@ def sub_fp(instruction, num, scoreboard):
     source_reg = check_fp_reg_location(reg_source)
     source_reg2 = check_fp_reg_location(reg_source2)
 
+    memory = source_reg - source_reg2
+
     if(num == 0):
         issue_timer += 1
         sub_vals.append(issue_timer)
@@ -973,8 +969,6 @@ def sub_fp(instruction, num, scoreboard):
 
         write_back_timer = execution_timer + 1
         sub_vals.append(write_back_timer)
-
-        memory = source_reg - source_reg2
 
         set_fp_reg_location(reg_dest, memory)
         
@@ -1007,6 +1001,8 @@ def sub_integer(instruction, num, scoreboard):
     source_reg = check_integer_regs(reg_source)
     source_reg2 = check_integer_regs(reg_source2)
 
+    memory = source_reg - source_reg2
+
     if(num == 0):
         issue_timer += INTEGER_CYCLES
         sub_vals.append(issue_timer)
@@ -1020,8 +1016,6 @@ def sub_integer(instruction, num, scoreboard):
         write_back_timer = execution_timer + INTEGER_CYCLES
         sub_vals.append(write_back_timer)
 
-        memory = source_reg - source_reg2
-        
         set_int_reg_location(reg_dest, memory)
         
         return sub_vals
@@ -1056,6 +1050,8 @@ def multiply_instruction(instruction, num, scoreboard):
     source_reg = check_fp_reg_location(reg_source)
     source_reg2 = check_fp_reg_location(reg_source2)
 
+    memory = (source_reg * source_reg2)
+
     if(num == 0):
         issue_timer += 1
         mul_vals.append(issue_timer)
@@ -1068,8 +1064,6 @@ def multiply_instruction(instruction, num, scoreboard):
 
         write_back_timer = execution_timer + 1
         mul_vals.append(write_back_timer)
-
-        memory = (source_reg * source_reg2)
 
         set_fp_reg_location(reg_dest, memory)
 
@@ -1102,6 +1096,8 @@ def division_instruction(instruction, num, scoreboard):
     source_reg = check_fp_reg_location(reg_source)
     source_reg2 = check_fp_reg_location(reg_source2)
 
+    memory = source_reg / source_reg2
+
     if(num == 0):
         issue_timer += 1
         div_vals.append(issue_timer)
@@ -1114,8 +1110,6 @@ def division_instruction(instruction, num, scoreboard):
 
         write_back_timer = execution_timer + 1
         div_vals.append(write_back_timer)
-
-        memory = source_reg / source_reg2
 
         set_fp_reg_location(reg_dest, memory)
 
@@ -1139,8 +1133,8 @@ def calc_integer_scoreboard(inst_tell, inst_num, mem_val, load_reg, scoreboard):
     
     #checks for if the unit before it is the same then it must wait until it is done
     if(scoreboard[inst_num-1][0][0] == "L" or scoreboard[inst_num-1][0][0:3] == "S.D" or
-       scoreboard[inst_num-1][0][0:4] == "ADDI" or scoreboard[inst_num-1][0][0:4] == "ADD "
-       or scoreboard[inst_num-1][0][0:5] == "SUB.D"):
+       scoreboard[inst_num-1][0][0:4] == "ADDI" or scoreboard[inst_num-1][0][0:4] == "ADD"
+       or scoreboard[inst_num-1][0][0:4] == "SUB"):
         
         #since we know here that the previous instruction is the same unit
         #then we must wait until that has completed, so it recieves the write_back time
@@ -1158,12 +1152,11 @@ def calc_integer_scoreboard(inst_tell, inst_num, mem_val, load_reg, scoreboard):
         for i in range(inst_num,0,-1):
             instruction = scoreboard[i-1][0]
             len_instruction = len(instruction)
-            print("test")
             #goes through the instruction and grabs the registers
             for j in range(len_instruction):
                 if(instruction[j] == "F"):
                     registers = instruction[j:len_instruction]
-                    print("registers",registers)
+
                     
                     for k in range(len(registers)):
                         if(registers[k] == "F"):
@@ -1178,49 +1171,72 @@ def calc_integer_scoreboard(inst_tell, inst_num, mem_val, load_reg, scoreboard):
         else:
             read_operand_timer = issue_timer + INTEGER_CYCLES
 
-            scoreboard_vals.append(read_operand_timer)
+        scoreboard_vals.append(read_operand_timer)
 
-            execution_timer = read_operand_timer + INTEGER_CYCLES
+        execution_timer = read_operand_timer + INTEGER_CYCLES
 
-            scoreboard_vals.append(execution_timer)
+        scoreboard_vals.append(execution_timer)
 
-            write_back_timer = execution_timer + INTEGER_CYCLES
+        write_back_timer = execution_timer + INTEGER_CYCLES
 
-            scoreboard_vals.append(write_back_timer)
-                            
+        scoreboard_vals.append(write_back_timer)
+
+        set_fp_reg_location(load_reg, mem_val)
 
     else:
-        print("hi test")  
+        prev_ins_wb_times = []
+        prev_reg = []
+        for i in range(inst_num, 0, -1):
+            instruction = scoreboard[i - 1][0]
+            len_instruction = len(instruction)
+            # goes through the instruction and grabs the registers
+            for j in range(len_instruction):
+                if (instruction[j] == "F"):
+                    dest_reg = instruction[j:j+2]
 
-        
-        
-        #loop used to calculate scoreboard values for instruction
-        #for i in range(len(scoreboard[inst_num])):
+                if (load_reg == dest_reg):
+                    prev_ins_wb_times.append(int(scoreboard[i - 1][4]))
 
+        if (prev_ins_wb_times != []):
+            prev_inst_wb = max(prev_ins_wb_times)
 
-    #NOTE TO NICK: I know these clearly aren't all the hazards
-    #but I figured I'd at least type up the skeleton of how we'll calculate the scoreboard,
-    #and then append the values
+        prev_inst_issue = scoreboard[inst_num-1][1]
+        if(prev_inst_issue > prev_inst_wb):
+            issue_timer = prev_inst_issue + 1
+            scoreboard_vals.append(issue_timer)
+        else:
+            issue_timer = prev_inst_wb + 1
+            scoreboard_vals.append(issue_timer)
 
+        read_operand_timer = issue_timer + INTEGER_CYCLES
+        scoreboard_vals.append(read_operand_timer)
 
-    #checks if at execute stage of calculating scoreboard value, iterates by 1 otherwise
-        #if(i == 2):
-         #   for j in range(len(scoreboard)):
-         #       if((score_val + execute_cycles) >= scoreboard[j][3]):
-          #          score_val += (scoreboard[j][i] - score_val)
+        execution_timer = read_operand_timer + INTEGER_CYCLES
+        scoreboard_vals.append(execution_timer)
 
+        prev_instruction = scoreboard[inst_num-1][0]
+        for i in range(len(prev_instruction)):
+            if(prev_instruction[i] == "F"):
+                prev_reg.append(prev_instruction[i:i+2])
 
-           # score_val += execute_cycles
-            #scoreboard[x].append(score_val)
+        if(prev_reg[1] == load_reg or prev_reg[2] == load_reg):
 
-        #else:
-         #   score_val += 1
+            prev_inst_read = scoreboard[inst_num - 1][2]
+
+            if(prev_inst_read > execution_timer):
+                write_back_timer = prev_inst_read + INTEGER_CYCLES
+            else:
+                write_back_timer = execution_timer + INTEGER_CYCLES
+        else:
+            write_back_timer = execution_timer + INTEGER_CYCLES
+
+        scoreboard_vals.append(write_back_timer)
+
+        set_fp_reg_location(load_reg, mem_val)
 
     return(scoreboard_vals)
 
 main()
     
 
- 
 
-    
