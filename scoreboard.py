@@ -1392,11 +1392,18 @@ def calc_add_sub_scoreboard(inst_num, mem_val, registers, scoreboard):
 
 def calc_immediates_scoreboard(inst_num, mem_val, load_reg, scoreboard):
     print("hi")
-
+    i = 1
+    for i in range(len(scoreboard[inst_num-1])):
+        scoreboard[inst_num-1][i] = scoreboard[inst_num-2][4] + 1
+        
+        if(prev_wb_val > scoreboard[inst_num-1][2])
+            scoreboard[inst_num-1][3] += prev_wb_val - scoreboard[inst_num-1][2]
+        
+    
 
 def calc_multiply_scoreboard(inst_num, mem_val, load_reg, scoreboard):
     print("hi")
-
+    
 def calc_division_scoreboard(inst_num, mem_val, load_reg, scoreboard):
     print("hi")
 
