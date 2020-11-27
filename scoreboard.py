@@ -1759,7 +1759,9 @@ def calc_multiply_scoreboard(inst_num, mem_val, registers, scoreboard):
 
     return scoreboard_vals
 
+#calculates scoreboard values when division is called
 def calc_division_scoreboard(inst_num, mem_val, registers, scoreboard):
+    #initialized variables
     scoreboard_vals = []
     issue_timer = 0
     issue_timer_check = 0
@@ -1782,6 +1784,7 @@ def calc_division_scoreboard(inst_num, mem_val, registers, scoreboard):
         if (scoreboard[i - 1][0][0:5] == "DIV.D"):
             prev_stores_wb_times.append(scoreboard[i - 1][4])
 
+    #sets up previous instructions values for hazard checking
     prev_inst_issue = scoreboard[inst_num - 1][1]
     if (prev_stores_wb_times != []):
         if (max(prev_stores_wb_times) > prev_inst_issue):
@@ -1869,7 +1872,7 @@ def calc_division_scoreboard(inst_num, mem_val, registers, scoreboard):
                 break
             else:
                 continue
-
+        
         if (prev_read_time > execution_timer):
             write_back_timer = prev_read_time + INTEGER_CYCLES
         else:
