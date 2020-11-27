@@ -305,7 +305,7 @@ def main():
         # appends the instruction into a list of the previous instructions
         prev_instructions.append(scoreboard[i][0])
 
-        printScoreboard(scoreboard)
+    printScoreboard(scoreboard)
     #printing all of the registers
     print_fp_registers()
     print_integer_registers()
