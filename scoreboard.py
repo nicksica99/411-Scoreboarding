@@ -305,6 +305,7 @@ def main():
         # appends the instruction into a list of the previous instructions
         prev_instructions.append(scoreboard[i][0])
 
+
     printScoreboard(scoreboard)
     #printing all of the registers
     print_fp_registers()
@@ -785,7 +786,8 @@ def load_instruction(instruction, num, scoreboard):
     # gets the registers, offset and memory value for the load instruction
     for i in range(len(instruction)):
         if (instruction[i] == "F"):
-            reg = instruction[i:i + 2]
+            reg = instruction[i:i + 3]
+            reg = reg.strip(",")
 
         if (instruction[i] == "("):
             offset = int(instruction[i - 1])
@@ -838,7 +840,8 @@ def store_instruction(instruction, num, scoreboard):
     # gets the registers, offset and memory value for the load instruction
     for i in range(len(instruction)):
         if (instruction[i] == "F"):
-            reg = instruction[i:i + 2]
+            reg = instruction[i:i + 3]
+            reg = reg.strip(",")
 
         if (instruction[i] == "("):
             offset = int(instruction[i - 1])
@@ -890,9 +893,9 @@ def add_integer(instruction, num, scoreboard):
 
     for i in range(len(instruction)):
         if (instruction[i] == "$"):
-            registers.append(instruction[i:i + 2])
-        if (i == len(instruction) - 1):
-            registers.append(instruction[i - 1:i + 1])
+            regs = instruction[i:i + 3]
+            regs = regs.strip(",")
+            registers.append(regs)
 
     reg_dest = registers[0]
     reg_source = registers[1]
@@ -939,9 +942,11 @@ def add_immediate(instruction, num, scoreboard):
 
     for i in range(len(instruction)):
         if (instruction[i] == "$"):
-            registers.append(instruction[i:i + 2])
-        if (i == len(instruction) - 1):
-            registers.append(instruction[i - 1:i + 1])
+            regs = instruction[i:i + 3]
+            regs = regs.strip(",")
+            registers.append(regs)
+        if(i == len(instruction) - 1):
+            registers.append(instruction[i-1:i+1])
 
     reg_dest = registers[0]
     reg_source = registers[1]
@@ -987,10 +992,12 @@ def add_fp(instruction, num, scoreboard):
 
     for i in range(len(instruction)):
         if (instruction[i] == "F"):
-            registers.append(instruction[i:i + 2])
-        if (i == len(instruction) - 1):
-            registers.append(instruction[i - 1:i + 1])
+            regs = instruction[i:i + 3]
+            regs = regs.strip(",")
+            registers.append(regs)
 
+    print(registers[0])
+    print(registers[1])
     reg_dest = registers[0]
     reg_source = registers[1]
     reg_source2 = registers[2]
@@ -1036,9 +1043,9 @@ def sub_fp(instruction, num, scoreboard):
 
     for i in range(len(instruction)):
         if (instruction[i] == "F"):
-            registers.append(instruction[i:i + 2])
-        if (i == len(instruction) - 1):
-            registers.append(instruction[i - 1:i + 1])
+            regs = instruction[i:i + 3]
+            regs = regs.strip(",")
+            registers.append(regs)
 
     reg_dest = registers[0]
     reg_source = registers[1]
@@ -1084,9 +1091,10 @@ def sub_integer(instruction, num, scoreboard):
 
     for i in range(len(instruction)):
         if (instruction[i] == "$"):
-            registers.append(instruction[i:i + 2])
-        if (i == len(instruction) - 1):
-            registers.append(instruction[i - 1:i + 1])
+            regs = instruction[i:i + 3]
+            regs = regs.strip(",")
+            registers.append(regs)
+
 
     reg_dest = registers[0]
     reg_source = registers[1]
@@ -1133,7 +1141,9 @@ def multiply_instruction(instruction, num, scoreboard):
 
     for i in range(len(instruction)):
         if (instruction[i] == "F"):
-            registers.append(instruction[i:i + 2])
+            regs = instruction[i:i + 3]
+            regs = regs.strip(",")
+            registers.append(regs)
 
     reg_dest = registers[0]
     reg_source = registers[1]
@@ -1181,7 +1191,9 @@ def division_instruction(instruction, num, scoreboard):
 
     for i in range(len(instruction)):
         if (instruction[i] == "F"):
-            registers.append(instruction[i:i + 2])
+            regs = instruction[i:i + 3]
+            regs = regs.strip(",")
+            registers.append(regs)
 
     reg_dest = registers[0]
     reg_source = registers[1]
@@ -1207,8 +1219,6 @@ def division_instruction(instruction, num, scoreboard):
         div_vals.append(write_back_timer)
 
         set_fp_reg_location(reg_dest, memory)
-
-        print(fp_reg4)
 
         return div_vals
     else:
@@ -1238,7 +1248,6 @@ def calc_load_scoreboard(inst_num, mem_val, load_reg, scoreboard):
             prev_loads_wb_times.append(scoreboard[i - 1][4])
 
     prev_inst_issue = scoreboard[inst_num - 1][1]
-    print(prev_loads_wb_times)
     if (prev_loads_wb_times != []):
         if (max(prev_loads_wb_times) > prev_inst_issue):
             issue_timer_check = max(prev_loads_wb_times) + INTEGER_CYCLES
@@ -1303,7 +1312,6 @@ def calc_load_scoreboard(inst_num, mem_val, load_reg, scoreboard):
 
     scoreboard_vals.append(write_back_timer)
 
-    print(load_reg, mem_val)
     set_fp_reg_location(load_reg, mem_val)
 
     return scoreboard_vals
@@ -1762,6 +1770,10 @@ def calc_division_scoreboard(inst_num, mem_val, registers, scoreboard):
     dest_reg = registers[0]
     source_reg1 = registers[1]
     source_reg2 = registers[2]
+
+    print(dest_reg)
+    print(source_reg1)
+    print(source_reg2)
 
     # checks to see if units are being used
     prev_stores_wb_times = []
