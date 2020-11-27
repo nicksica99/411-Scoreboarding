@@ -1,5 +1,6 @@
 # 411-Scoreboarding
 CMSC 411 @ UMBC Scoreboarding project for Ivan
+
 Nick Sica and Jack Huey
 
 General Summary + User Instructions:
@@ -14,5 +15,12 @@ and 5 columns. Once it is read in, each instruction is handled and given the cor
 on the scoreboard.The program handles the scoreboard by instruction. There is a different function for each type of instruction
 which allows for versatility and effectiveness. While this would hamper efficiency, tracking efficiency is unnecessary for this project. 
 
-Specifics: The MIPS text file MUST be in the same directory. TESTED ON LINUX USING GL.
+
+HOW TO RUN:
+The MIPS text file MUST be in the same directory. TESTED ON LINUX USING GL.
+
+1: Make sure scoreboard.py and your MIPS example file is in the same directory. 
+2: run the command "python3 scoreboard.py"
+3: It will prompt you for your textfile name, enter something like this: MIPSexample.txt (do not add quotes)
+4: The program will run and should print out the finished scoreboard and the register values. 
 
