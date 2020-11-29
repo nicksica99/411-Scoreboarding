@@ -164,7 +164,7 @@ def printScoreboard(scoreboard):
 # print_fp_registers
 # prints all of the floating point registers for comparison of the arithmetic done
 def print_fp_registers():
-    print("FP Registers in order (1-32):", fp_reg1, fp_reg2, fp_reg3, fp_reg4, fp_reg5, fp_reg6, fp_reg7, fp_reg8,
+    print("FP Registers in order (0-31):", fp_reg1, fp_reg2, fp_reg3, fp_reg4, fp_reg5, fp_reg6, fp_reg7, fp_reg8,
           fp_reg9,
           fp_reg10, fp_reg11, fp_reg12, fp_reg13, fp_reg14, fp_reg15, fp_reg16, fp_reg17, fp_reg18, fp_reg19, fp_reg20,
           fp_reg21, fp_reg22, fp_reg23, fp_reg24, fp_reg25, fp_reg26, fp_reg27, fp_reg28, fp_reg29, fp_reg30, fp_reg31,
@@ -174,7 +174,7 @@ def print_fp_registers():
 # print_integer_registers
 # prints all of the integer registers for comparison of the arithmetic done
 def print_integer_registers():
-    print("Integer Registers in order (1-32):", integer_reg1, integer_reg2, integer_reg3, integer_reg4, integer_reg5,
+    print("Integer Registers in order (0-31):", integer_reg1, integer_reg2, integer_reg3, integer_reg4, integer_reg5,
           integer_reg6, integer_reg7, integer_reg8, integer_reg9, integer_reg10, integer_reg11, integer_reg12,
           integer_reg13,
           integer_reg14, integer_reg15, integer_reg16, integer_reg17, integer_reg18, integer_reg19, integer_reg20,
@@ -185,8 +185,8 @@ def print_integer_registers():
 
 
 # main()
-#
-#
+# Builds the scoreboard and handles reading in the instructions
+# Prints the scoreboard and registers at the end
 def main():
     # width of the scoreboard will always be 5
     width = 5
@@ -1729,6 +1729,15 @@ def calc_immediates_scoreboard(inst_num, mem_val, registers, scoreboard):
 
         if (prev_reg_war == [] or len(prev_reg_war) == 1):
             continue
+
+        # in case there is an ADDI, condition to check so that it can handle the ADDI and not break
+        if(len(prev_reg_war) == 2):
+            if(dest_reg == prev_reg_war[1]):
+                prev_read_time = int(scoreboard[i-1][2])
+                break
+            else:
+                continue
+
         # gets the read times of the previous instructions if there is a hit
         if (dest_reg == prev_reg_war[1] or dest_reg == prev_reg_war[2]):
             prev_read_time = int(scoreboard[i - 1][2])
