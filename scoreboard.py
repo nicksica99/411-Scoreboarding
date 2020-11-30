@@ -1293,7 +1293,7 @@ def calc_load_scoreboard(inst_num, mem_val, load_reg, scoreboard):
         instruction = scoreboard[inst_num - 1][0]
         if (scoreboard[i - 1][0][0] == "L" or scoreboard[i - 1][0][0:3] == "S.D"
                 or scoreboard[i - 1][0][0:4] == "ADDI" or scoreboard[i - 1][0][0:4] == "ADD"
-                or scoreboard[i - 1][0][0:4] == "SUB"):
+                or scoreboard[i - 1][0][0:3] == "SUB"):
             prev_loads_wb_times.append(scoreboard[i - 1][4])
 
     # gets the previous instruction's issue time
@@ -1400,7 +1400,7 @@ def calc_store_scoreboard(inst_num, mem_val, load_reg, register, scoreboard):
         instruction = scoreboard[inst_num - 1][0]
         if (scoreboard[i - 1][0][0] == "L" or scoreboard[i - 1][0][0:3] == "S.D"
                 or scoreboard[i - 1][0][0:4] == "ADDI" or scoreboard[i - 1][0][0:4] == "ADD"
-                or scoreboard[i - 1][0][0:4] == "SUB"):
+                or scoreboard[i - 1][0][0:3] == "SUB"):
             prev_stores_wb_times.append(scoreboard[i - 1][4])
 
 
@@ -1634,7 +1634,7 @@ def calc_immediates_scoreboard(inst_num, mem_val, registers, scoreboard):
         instruction = scoreboard[inst_num - 1][0]
         if (scoreboard[i - 1][0][0] == "L" or scoreboard[i - 1][0][0:3] == "S.D" or
                 scoreboard[i - 1][0][0:4] == "ADDI" or scoreboard[i - 1][0][0:4] == "ADD"
-                or scoreboard[i - 1][0][0:4] == "SUB"):
+                or scoreboard[i - 1][0][0:3] == "SUB"):
             prev_stores_wb_times.append(scoreboard[i - 1][4])
 
     prev_inst_issue = scoreboard[inst_num - 1][1]
