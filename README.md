@@ -8,7 +8,7 @@ General Summary + User Instructions:
 The way we designed the program requires users to enter in
 the proper text file containing the MIPS code to be read in, and then
 it will proceed to read in the file and calculate the scoreboard
-The resulting scoreboard will be represented via a 2D array and printed out for the user to see
+The resulting scoreboard will be represented via a 2D array and printed out for the user to see.
 The resulting register values are also printed.
 
 The way the scoreboard is first built is by creating a 2D array of the amount of instructions (rows)
