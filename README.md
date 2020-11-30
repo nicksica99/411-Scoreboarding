@@ -25,7 +25,7 @@ The MIPS text file MUST be in the same directory. TESTED ON LINUX USING GL.
 
 2: run the command "python3 scoreboard.py"
 
-3: It will prompt you for your textfile name, enter something like this: MIPSexample.txt (do not add quotes)
+3: It will prompt you for your textfile name, enter something like this: MIPSexample.txt (do not add quotes unless there are quotes in the name of your file)
 
 4: The program will run and should print out the finished scoreboard and the register values. 
 
