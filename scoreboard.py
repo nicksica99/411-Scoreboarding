@@ -1292,7 +1292,7 @@ def calc_load_scoreboard(inst_num, mem_val, load_reg, scoreboard):
     for i in range(inst_num, 0, -1):
         instruction = scoreboard[inst_num - 1][0]
         if (scoreboard[i - 1][0][0] == "L" or scoreboard[i - 1][0][0:3] == "S.D"
-                or scoreboard[i - 1][0][0:4] == "ADDI" or scoreboard[i - 1][0][0:4] == "ADD"
+                or scoreboard[i - 1][0][0:4] == "ADDI" or scoreboard[i - 1][0][0:3] == "ADD"
                 or scoreboard[i - 1][0][0:3] == "SUB"):
             prev_loads_wb_times.append(scoreboard[i - 1][4])
 
@@ -1399,7 +1399,7 @@ def calc_store_scoreboard(inst_num, mem_val, load_reg, register, scoreboard):
     for i in range(inst_num, 0, -1):
         instruction = scoreboard[inst_num - 1][0]
         if (scoreboard[i - 1][0][0] == "L" or scoreboard[i - 1][0][0:3] == "S.D"
-                or scoreboard[i - 1][0][0:4] == "ADDI" or scoreboard[i - 1][0][0:4] == "ADD"
+                or scoreboard[i - 1][0][0:4] == "ADDI" or scoreboard[i - 1][0][0:3] == "ADD"
                 or scoreboard[i - 1][0][0:3] == "SUB"):
             prev_stores_wb_times.append(scoreboard[i - 1][4])
 
@@ -1633,7 +1633,7 @@ def calc_immediates_scoreboard(inst_num, mem_val, registers, scoreboard):
     for i in range(inst_num, 0, -1):
         instruction = scoreboard[inst_num - 1][0]
         if (scoreboard[i - 1][0][0] == "L" or scoreboard[i - 1][0][0:3] == "S.D" or
-                scoreboard[i - 1][0][0:4] == "ADDI" or scoreboard[i - 1][0][0:4] == "ADD"
+                scoreboard[i - 1][0][0:4] == "ADDI" or scoreboard[i - 1][0][0:3] == "ADD"
                 or scoreboard[i - 1][0][0:3] == "SUB"):
             prev_stores_wb_times.append(scoreboard[i - 1][4])
 
