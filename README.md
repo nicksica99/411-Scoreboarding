@@ -29,3 +29,4 @@ The MIPS text file MUST be in the same directory. TESTED ON LINUX USING GL.
 
 4: The program will run and should print out the finished scoreboard and the register values. 
 
+****To anyone reading this, this program can 100% become more efficient, i plan to rework it as a side project to drop the amount of code***
